@@ -1,57 +1,40 @@
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-def calc_histogram(image):
-    hist, _ = np.histogram(image.ravel(), bins=256, range=[0, 256])
-    hist = hist / np.sum(hist)
-    return hist
+# تعریف ماتریس
+matrix = np.array([[7, 3, 7, 6, 5, 5, 6, 2, 2, 1],
+                   [1, 5, 6, 1, 2, 2, 2, 2, 7, 7],
+                   [2, 1, 6, 4, 2, 3, 4, 2, 4, 3],
+                   [3, 5, 3, 4, 4, 6, 6, 6, 6, 6],
+                   [4, 6, 7, 3, 4, 5, 4, 5, 6, 4],
+                   [6, 3, 2, 1, 7, 7, 4, 5, 6, 7],
+                   [2, 1, 6, 4, 2, 3, 4, 2, 4, 3],
+                   [1, 2, 2, 6, 5, 5, 6, 7, 3, 7],
+                   [4, 6, 7, 3, 4, 5, 4, 5, 6, 4],
+                   [6, 3, 2, 1, 7, 7, 4, 5, 6, 7]])
 
-def calc_equalizer(hist):
-    cdf = np.cumsum(hist)
-    equalizer = np.round(cdf * 255).astype(int)
-    return equalizer
+# محاسبه هیستوگرام اولیه
+hist_before, _ = np.histogram(matrix.ravel(), bins=256, range=[0, 256])
 
-# بارگذاری تصویر
-image_path = 'home.png'
-image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+# هموارسازی هیستوگرام
+cdf = np.cumsum(hist_before)
+cdf_normalized = cdf / cdf.max()
+equalizer = np.round(cdf_normalized * 255).astype(int)
+matrix_equalized = equalizer[matrix]
 
-# بررسی موفقیت بارگذاری تصویر
-if image is None:
-    print(f"Could not read the image at path {image_path}")
-else:
-    # محاسبه هیستوگرام تصویر
-    hist = calc_histogram(image)
+# محاسبه هیستوگرام هموارسازی شده
+hist_after, _ = np.histogram(matrix_equalized.ravel(), bins=256, range=[0, 256])
 
-    # محاسبه تابع هموارسازی
-    equalizer = calc_equalizer(hist)
-
-    # هموارسازی تصویر
-    equalized_image = equalizer[image]
-
-    # نمایش تصویر و هیستوگرام‌ها
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-    ax1.imshow(image, cmap='gray')
-    ax1.set_title('Original Image')
-    ax2.imshow(equalized_image, cmap='gray')
-    ax2.set_title('Equalized Image')
-    plt.show()
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-    ax1.bar(np.arange(256), hist, width=1)
-    ax1.set_xlabel('Pixel intensity')
-    ax1.set_ylabel('Frequency')
-    ax1.set_title('Original Image Histogram')
-    ax2.bar(np.arange(256), calc_histogram(equalized_image), width=1)
-    ax2.set_xlabel('Pixel intensity')
-    ax2.set_ylabel('Frequency')
-    ax2.set_title('Equalized Image Histogram')
-    plt.show()
-
-    # نمایش تابع هموارسازی
-    fig, ax = plt.subplots()
-    ax.plot(np.arange(256), calc_equalizer(hist))
-    ax.set_xlabel('Pixel intensity')
-    ax.set_ylabel('Equalizer function value')
-    ax.set_title('Histogram Equalization Function')
-    plt.show()
+# نمایش نمودار هیستوگرام‌ها
+plt.figure(figsize=(10, 5))
+plt.subplot(121)
+plt.bar(np.arange(256), hist_before)
+plt.title('Original Image Histogram')
+plt.xlabel('Pixel intensity')
+plt.ylabel('Frequency')
+plt.subplot(122)
+plt.bar(np.arange(256), hist_after)
+plt.title('Equalized Image Histogram')
+plt.xlabel('Pixel intensity')
+plt.ylabel('Frequency')
+plt.show()
